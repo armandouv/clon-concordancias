@@ -1,0 +1,15 @@
+wheel
+Flask
+Jinja2
+matplotlib
+requests
+numpy
+Flask-Cors
+gunicorn
+itsdangerous
+pandas
+scikit-learn
+scipy
+seaborn
+threadpoolctl
+Werkzeug
