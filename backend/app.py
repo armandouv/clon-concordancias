@@ -93,7 +93,7 @@ def get_corpus_files():
     corpus_files = []
     if corpus_id == '1':
         corpus_files = [
-        # Se retorna type como metadato para saber como interpretar el archivo XML.
+        # NOTA: Se asume que se agrega un metadado type al archivo para saber como interpretar el archivo XML.
             {"id": 1, "nombre": "Fundam-Nat.xml", "type": "audio"},
             {"id": 2, "nombre": "prueba-xml.xml", "type": "xml"},
             {"id": 3, "nombre": "historieta.xml", "type": "img"},
