@@ -97,6 +97,7 @@ def get_corpus_files():
             {"id": 1, "nombre": "Fundam-Nat.xml", "type": "audio"},
             {"id": 2, "nombre": "prueba-xml.xml", "type": "xml"},
             {"id": 3, "nombre": "historieta.xml", "type": "img"},
+            {"id": 4, "nombre": "definir_comme.xml", "type": "xml"},
         ]
     return jsonify(corpus_files)
 
@@ -128,8 +129,10 @@ def get_file_info(corpus_id, file_id):
         return "audio", os.path.join(CORPUS_DIR, f'{corpus_id}', "Fundam-Nat.xml")
     elif file_id == '2':
         return "xml", os.path.join(CORPUS_DIR, f'{corpus_id}', "prueba-xml.xml")
-    else:
+    elif file_id == '3':
         return "img", os.path.join(CORPUS_DIR, f'{corpus_id}', "historieta.xml")
+    else:
+        return "xml", os.path.join(CORPUS_DIR, f'{corpus_id}', "definir_comme.xml")
 
 def get_attachments(corpus_id, file_id):
     # Lógica para obtener archivos adjuntos

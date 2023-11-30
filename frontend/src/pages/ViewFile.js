@@ -1,53 +1,53 @@
 import React, { useState, useEffect } from 'react';
-import { VStack, Heading, Box, Tag, TagLabel, Link as ChakraLink, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, Image } from '@chakra-ui/react';
+import { VStack, Heading, Box, Text, Link as ChakraLink, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, Image } from '@chakra-ui/react';
 import Parser from 'react-xml-parser';
 import { useParams } from 'react-router-dom';
 import { API } from '../App';
+
+let idx = 0;
+
+const CustomTag = ({ color, fontSize, text, onClickAction }) => (
+  <div style={{ color, fontSize, padding: '4px', margin: '2px', border: '1px solid', borderRadius: '4px', display: "inline-block" }}>
+    <ChakraLink onClick={onClickAction}>{text}</ChakraLink>
+  </div>
+);
 
 const ViewFile = () => {
   const { corpusId, fileId } = useParams();
   const [fileWithAttachments, setFileWithAttachments] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
 
-  useEffect(() => {
-    const fetchFileWithAttachments = async () => {
-      try {
-        const response = await fetch(API + `/getFileWithAttachments?corpus_id=${corpusId}&file_id=${fileId}`);
-        const data = await response.json();
-        setFileWithAttachments(data);
-      } catch (error) {
-        console.error('Error fetching file with attachments:', error);
-      }
-    };
+  const fetchFileWithAttachments = async () => {
+    try {
+      const response = await fetch(API + `/getFileWithAttachments?corpus_id=${corpusId}&file_id=${fileId}`);
+      const data = await response.json();
+      setFileWithAttachments(data);
+    } catch (error) {
+      console.error('Error fetching file with attachments:', error);
+    }
+  };
 
+  useEffect(() => {
     fetchFileWithAttachments();
   }, [corpusId, fileId]);
 
-  const closeModal = () => {
-    setSelectedImage(null);
-  };
+  const tagColors = {}; // Map to store colors for each tag type
 
-  const getRandomColor = () => {
-    const colors = ['red', 'orange', 'yellow', 'green', 'teal', 'blue', 'purple', 'pink'];
-    return colors[Math.floor(Math.random() * colors.length)];
+  const getRandomColor = (tagType) => {
+    if (!tagColors[tagType]) {
+      const colors = ['red', 'orange', 'green', 'teal', 'blue', 'purple'];
+      tagColors[tagType] = colors[idx++ % colors.length];
+    }
+    return tagColors[tagType];
   };
 
   const playAudio = (audioId, audioText) => {
-    // Find the audio file in fileWithAttachments.attachments
     const audioFile = fileWithAttachments.attachments.find(attachment => attachment.name === `${audioId}.wav`);
-  
+
     if (audioFile) {
-      // Create a new audio element
       const audio = new Audio(`data:audio/wav;base64,${audioFile.file}`);
-  
-      // Set up event listeners (optional)
-      audio.addEventListener('ended', () => {
-        console.log('Audio playback ended');
-      });
-  
-      // Play the audio
       audio.play();
-  
+
       console.log(`Playing audio: ${audioId}.wav, Text: ${audioText}`);
     } else {
       console.error(`Audio file ${audioId}.wav not found`);
@@ -55,7 +55,6 @@ const ViewFile = () => {
   };
 
   const displayImage = (imageId, imageText) => {
-    // Find the image file in fileWithAttachments.attachments
     const imageFile = fileWithAttachments.attachments.find(attachment => attachment.name === `${imageId}.jpg`);
 
     if (imageFile) {
@@ -66,31 +65,70 @@ const ViewFile = () => {
     }
   };
 
-  const renderGenericTags = (tags, onClickAction) => {
+  const closeModal = () => {
+    setSelectedImage(null);
+  };
+
+  const renderTags = (tags, onClickAction, parentColor = null, depth = 0) => {
     return (
       <div>
-        {tags.map((tag, index) => (
-          <Tag key={index} colorScheme={getRandomColor()} variant="solid" size="md" m={1}>
-            <TagLabel>
-              <ChakraLink onClick={() => onClickAction(tag.id, tag.text)}>
-                {tag.text}
-              </ChakraLink>
-            </TagLabel>
-          </Tag>
-        ))}
+        {tags.map((tag, index) => {
+          const tagColor = getRandomColor(tag.name);
+          const fontSize = parentColor ? 'lg' : 'md';
+          console.log(tag.value);
+  
+          return (
+            <React.Fragment key={index}>
+              <CustomTag
+                color={tagColor}
+                fontSize={fontSize}
+                text={tag.value}
+                onClickAction={() => onClickAction(tag.attributes.id, tag.value)}
+              />
+  
+              {/* Recursively render nested tags */}
+              {tag.children && tag.children.length > 0 && (
+                <div style={{ marginLeft: '10px' }}>
+                  {renderTags(tag.children, onClickAction, tagColor, depth + 1)}
+                </div>
+              )}
+            </React.Fragment>
+          );
+        })}
       </div>
     );
   };
+  
 
   const renderXMLTags = (content) => {
     const xmlParser = new Parser();
     const xmlDoc = xmlParser.parseFromString(content);
-
-    const tagsWithId = xmlDoc.getElementsByTagName('*').map((node) => {
-      return node.attributes && node.attributes.id ? { id: node.attributes.id, text: node.value } : null;
-    }).filter((tag) => tag !== null);
-
-    return renderGenericTags(tagsWithId, () => {
+  
+    const renderTags = (tags, onClickAction, parentColor = null, depth = 0) => {
+      return (
+        <VStack align="start" spacing={2} ml={4 * depth}>
+          {tags.map((tag, index) => {
+            const tagColor = getRandomColor(tag.name);
+            const fontSize = parentColor ? 'lg' : 'md';
+  
+            return (
+              <Box key={index} bg={tagColor} p={2} borderRadius="md">
+                <Text fontWeight="bold">{`<${tag.name}>`}</Text>
+                {tag.value && <Text>{tag.value}</Text>}
+                {/* Recursively render nested tags */}
+                {tag.children && tag.children.length > 0 && (
+                  <VStack align="start" spacing={2} ml={4}>
+                    {renderTags(tag.children, onClickAction, tagColor, depth + 1)}
+                  </VStack>
+                )}
+              </Box>
+            );
+          })}
+        </VStack>
+      );
+    };
+  
+    return renderTags(xmlDoc.children, () => {
       console.log('Handle XML tag click:', 'Not implemented yet');
     });
   };
@@ -98,23 +136,13 @@ const ViewFile = () => {
   const renderAudioTags = () => {
     const audioParser = new Parser();
     const audioDoc = audioParser.parseFromString(fileWithAttachments.file);
-
-    const audioTagsWithId = audioDoc.getElementsByTagName('*').map((node) => {
-      return node.attributes && node.attributes.id ? { id: node.attributes.id, text: node.value } : null;
-    }).filter((tag) => tag !== null);
-
-    return renderGenericTags(audioTagsWithId, playAudio);
+    return renderTags(audioDoc.children, playAudio);
   };
 
   const renderImageTags = () => {
     const imageParser = new Parser();
     const imageDoc = imageParser.parseFromString(fileWithAttachments.file);
-
-    const imageTagsWithId = imageDoc.getElementsByTagName('*').map((node) => {
-      return node.attributes && node.attributes.id ? { id: node.attributes.id, text: node.value } : null;
-    }).filter((tag) => tag !== null);
-
-    return renderGenericTags(imageTagsWithId, displayImage);
+    return renderTags(imageDoc.children, displayImage);
   };
 
   return (
