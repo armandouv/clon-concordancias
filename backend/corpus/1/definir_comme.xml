@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <corpus>
+   <CD><luz><verbo>fdsfds </verbo><casa>fdsfds </casa></luz>
+   <sustantivo>adfsfda</sustantivo> </CD>
    <CD><verbo>fdsfds </verbo><verbo>fdsfds </verbo>
    <sustantivo>adfsfda</sustantivo> </CD>
+   <CD num="2"><T>Insuffisance respiratoire</T> <PT>(</PT><PVD><VD>définie</VD><NX> comme </NX> </PVD> <MRD>étant</MRD> <D> la nécessité d’oxygène à haut débit, d’une ventilation non invasive, d’une ventilation mécanique ou d’une oxygénation extracorporelle [ECMO]</D><PT>)</PT><p/></CD>
 </corpus>
