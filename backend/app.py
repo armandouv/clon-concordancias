@@ -7,6 +7,10 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
+
+
+# Código para utilizar la API de GECO (inconcluso)
+
 # URL de la API de GECO
 GECO_API_URL = "http://devsysii.iingen.unam.mx/geco4/proyectos/apidocs/"
 token = "c51ff1be61b99259fd2f29730c6276f95944287e"
@@ -76,8 +80,16 @@ def get_window_around_match(text, match_pos):
     return []
 """
 
-# USING MOCK DATA
 
+
+
+
+
+
+
+# Código para una API simulada (con datos mock)
+
+# Retorna un JSON con una lista de los corpus existentes, con estructura {id, nombre}.
 @app.route("/getCorpus", methods=["GET"])
 def get_corpus_list():
     corpus_data = [
@@ -85,7 +97,12 @@ def get_corpus_list():
     ]
     return jsonify(corpus_data)
 
-
+# Retorna un JSON con una lista de los archivos principales correspondientes al corpus indicado en
+# el parametro corpus_id, con estructura {id, nombre, type}. El valor de type puede ser audio, xml o img, e
+# indica la forma de interpretación del archivo. A diferencia de la funcionalidad actual de GECO, donde se
+# admiten únicamente archivos TXT como parte del corpus, aquí se permite retornar un archivo XML como parte
+# del corpus. De esta forma, el front-end interpreta de distinta forma los archivos XML, dependiendo del valor
+# de type.
 @app.route("/getCorpusFiles", methods=["GET"])
 def get_corpus_files():
     corpus_id = request.args.get('corpus_id')
@@ -101,6 +118,9 @@ def get_corpus_files():
         ]
     return jsonify(corpus_files)
 
+# Retorna el archivo con file_id, asociado a corpus_id, incluyendo sus archivos adjuntos.
+# La estructura de la respuesta es
+# {file: "contenido del archivo codificado en Base64", name, type, attachments: [ {name, file}, ... ]}
 @app.route("/getFileWithAttachments", methods=["GET"])
 def get_file_with_attachments():
     try:
